@@ -1,5 +1,9 @@
 import sys
 import os
+import subprocess
+
+EXECUTE = False  # set False if you only want to print                                                   CHANGE
+
 
 def show_help():
     print(r"""
@@ -81,7 +85,7 @@ def extract_target_from_xml(xml_path: str) -> str | None:
 def determine_scope(folder_path: str) -> str:
     """Determine scope from folder name (group, role, site, ootb)."""
     parts = folder_path.lower().split(os.sep)
-    for scope in ["group", "role", "site", "ootb"]:
+    for scope in ["group", "role", "site", "ootb", "user"]:
         if scope in parts:
             return "site" if scope == "ootb" else scope
     return "unknown"
@@ -96,9 +100,20 @@ def determine_action(folder_path: str) -> str:
 
 def process_folder(base_folder: str, user: str, password: str, group: str ):
   """Walk through folders, find XML files, and print commands."""
-  if not os.path.isdir(base_folder):
-    print(f"Error: '{base_folder}' is not a valid directory.")
-    return
+
+  env1 = os.environ.copy()
+
+  #tc_root = os.environ.get("TC_ROOT")                                                  CHANGE
+  tc_root = f'D:\\abhi'
+  if not tc_root:
+      print("Error: TC_ROOT environment variable not set.")
+      return
+
+  # ✅ Use os.path.join to safely build path
+  root_path = os.path.join(tc_root, "bin")
+  exe_path = os.path.join(root_path, "preferences_manager.exe")
+
+
 
   for root, _, files in os.walk(base_folder):
     for file in files:
@@ -110,15 +125,20 @@ def process_folder(base_folder: str, user: str, password: str, group: str ):
 
           if target == "unknown":
             cmd = (
-              f'preferences_manager.exe -u={user} -p={password} -g={group} -mode=import -scope={scope} -action={action} -file="{xml_path}"'
+              f'{exe_path} -u={user} -p={password} -g={group} -mode=import -scope={scope} -action={action} -file="{xml_path}"'
             )
           else:
             cmd = (
-              f'preferences_manager.exe -u={user} -p={password} -g={group} -mode=import -scope={scope} -target={target} -action={action} -file="{xml_path}"'
+              f'{exe_path} -u={user} -p={password} -g={group} -mode=import -scope={scope} -target={target} -action={action} -file="{xml_path}"'
             )
-          print(cmd)
+          
+          if EXECUTE:
+              subprocess.run(cmd, shell=True, env=env1)
+          else:
+              print(cmd)
 
 def main():
+    
     user = password = group = folder_path = None
 
     # Parse command-line arguments
