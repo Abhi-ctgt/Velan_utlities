@@ -105,8 +105,8 @@ def process_folder(base_folder: str, user: str, password: str, group: str ):
 
   tc_root = os.environ.get("TC_ROOT")                                                 # CHANGE
   tc_data = os.environ.get("TC_DATA")                                                 # CHANGE
-  print(tc_root)
-  print(tc_data)
+  print(f'"TC_ROOT": {tc_root}')
+  print(f'"TC_DATA": {tc_data}')
 
 
   #tc_root = f'D:\\abhi'
