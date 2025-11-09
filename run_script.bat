@@ -20,8 +20,6 @@ if exist "%TCENV%" (
   exit /b
 )
 
-set "ScriptDir=%~dp0"
-
 :: Remove trailing backslash if present
 if "%ScriptDir:~-1%"=="\" set "ScriptDir=%ScriptDir:~0,-1%"
 
