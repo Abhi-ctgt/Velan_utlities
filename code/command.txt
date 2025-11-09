@@ -1,0 +1,7 @@
+| Step | Command                                        | Purpose                     |
+| ---- | ---------------------------------------------- | --------------------------- |
+| 1    | `python -m venv venv`                          | Create isolated environment |
+| 2    | `venv\Scripts\activate`                        | Activate environment        |
+| 3    | `pip install pyinstaller`                      | Install builder             |
+| 4    | `pyinstaller --onefile --clean app.py`         | Build single EXE            |
+| 5    | Run `dist/app.exe`                             | Test the result             |
