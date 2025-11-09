@@ -52,11 +52,17 @@ preference
     │   └── override
     │       └── DBA_pref_over.xml
     │
-    └── site
-    ├── merge
-    │   └── site_pref_merge.xml
-    └── override
-    └── site_pref_over.xml
+    ├── site
+    │   ├── merge
+    │   │   └── site_pref_merge.xml      ← Ensure correct case (e.g., 'DBA', not 'dba').
+    │   └── override
+    │       └── site_pref_over.xml
+    │
+    └── user
+        ├── merge
+        │   └── user_pref_merge.xml
+        └── override
+            └── user_pref_over.xml
 
 ──────────────────────────────────────────────────────────────
 Notes:
