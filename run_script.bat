@@ -53,7 +53,7 @@ call "%ScriptDir%import_column_config.bat"
 if errorlevel 1 echo [WARNING] import_column_config.bat returned an error.
 
 echo -------------------------------------------------------------
-call "%ScriptDir%preference_utility.exe  -u=11 -p=22 -g=33 -path="%PreferencesFolder%""
+call "%ScriptDir%preference_utility.exe -u=infodba -p=infodba -g=dba -path="%PreferencesFolder%""
 if errorlevel 1 echo [WARNING] preference_utility.exe returned an error.
 
 echo -------------------------------------------------------------
