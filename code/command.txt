@@ -5,3 +5,6 @@
 | 3    | `pip install pyinstaller`                                          | Install builder             |
 | 4    | `pyinstaller --onefile --clean preference_utility.py`              | Build single EXE            |
 | 5    | Run `dist/preference_utility.exe`                                  | Test the result             |
+
+preference_utility.exe -h
+preference_utility.exe  -u=11 -p=22 -g=33 -path=D:\Velan_preferenc_utitlity\Velan_utlities\configuration\preference

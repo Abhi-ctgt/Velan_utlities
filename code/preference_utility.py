@@ -54,7 +54,7 @@ preference
     │
     ├── site
     │   ├── merge
-    │   │   └── site_pref_merge.xml      ← Ensure correct case (e.g., 'DBA', not 'dba').
+    │   │   └── site_pref_merge.xml      
     │   └── override
     │       └── site_pref_over.xml
     │
