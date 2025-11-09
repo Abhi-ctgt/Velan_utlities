@@ -144,6 +144,7 @@ def process_folder(base_folder: str, user: str, password: str, group: str ):
               )
             
             if EXECUTE:
+                print(f'==> Importing: {cmd}')
                 subprocess.run(cmd, shell=True, env=env1)
             else:
                 print(cmd)
