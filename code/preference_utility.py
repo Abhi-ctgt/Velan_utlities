@@ -2,14 +2,14 @@ import sys
 import os
 import subprocess
 
-EXECUTE = False  # set False if you only want to print                                                   CHANGE
+EXECUTE = True  # set False if you only want to print                           
 
 
 def show_help():
     print(r"""
-───────────────────────────────────────────────────────────────────────────────────────
-                           Preference Utility - Help Guide
-───────────────────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────
+                Preference Utility - Help Guide
+──────────────────────────────────────────────────────────────────────────
 
 Usage:
   preference_utility.exe -u="<user>" -p="<password>" -g="<group>" -path="<folder_path>"
@@ -29,9 +29,9 @@ Arguments:
 Example:
   preference_utility.exe -u="admin" -p="1234" -g="DBA" -path="C:\Users\Documents"
 
-──────────────────────────────────────────────────────────────
-Expected Folder Structure:
-──────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────
+                Expected Folder Structure:
+────────────────────────────────────────────────────────────────────────
 
 preference
     ├── group
@@ -103,8 +103,13 @@ def process_folder(base_folder: str, user: str, password: str, group: str ):
 
   env1 = os.environ.copy()
 
-  #tc_root = os.environ.get("TC_ROOT")                                                  CHANGE
-  tc_root = f'D:\\abhi'
+  tc_root = os.environ.get("TC_ROOT")                                                 # CHANGE
+  tc_data = os.environ.get("TC_DATA")                                                 # CHANGE
+  print(tc_root)
+  print(tc_data)
+
+
+  #tc_root = f'D:\\abhi'
   if not tc_root:
       print("Error: TC_ROOT environment variable not set.")
       return
@@ -113,29 +118,35 @@ def process_folder(base_folder: str, user: str, password: str, group: str ):
   root_path = os.path.join(tc_root, "bin")
   exe_path = os.path.join(root_path, "preferences_manager.exe")
 
+  for folder_name in os.listdir(base_folder):
+    folder_path = os.path.join(base_folder, folder_name)
 
+    if not os.path.isdir(folder_path):
+        continue  # skip files directly under base_folder
 
-  for root, _, files in os.walk(base_folder):
-    for file in files:
-      if file.lower().endswith(".xml"):
-          xml_path = os.path.join(root, file)
-          scope = determine_scope(root)
-          action = determine_action(root)
-          target = extract_target_from_xml(xml_path)
+    print(f"\nImporting {folder_name.upper()} preferences...")
 
-          if target == "unknown":
-            cmd = (
-              f'{exe_path} -u={user} -p={password} -g={group} -mode=import -scope={scope} -action={action} -file="{xml_path}"'
-            )
-          else:
-            cmd = (
-              f'{exe_path} -u={user} -p={password} -g={group} -mode=import -scope={scope} -target={target} -action={action} -file="{xml_path}"'
-            )
-          
-          if EXECUTE:
-              subprocess.run(cmd, shell=True, env=env1)
-          else:
-              print(cmd)
+    for root, _, files in os.walk(folder_path):
+      for file in files:
+        if file.lower().endswith(".xml"):
+            xml_path = os.path.join(root, file)
+            scope = determine_scope(root)
+            action = determine_action(root)
+            target = extract_target_from_xml(xml_path)
+
+            if target == "unknown":
+              cmd = (
+                f'{exe_path} -u={user} -p={password} -g={group} -mode=import -scope={scope} -action={action} -file="{xml_path}"'
+              )
+            else:
+              cmd = (
+                f'{exe_path} -u={user} -p={password} -g={group} -mode=import -scope={scope} -target={target} -action={action} -file="{xml_path}"'
+              )
+            
+            if EXECUTE:
+                subprocess.run(cmd, shell=True, env=env1)
+            else:
+                print(cmd)
 
 def main():
     
