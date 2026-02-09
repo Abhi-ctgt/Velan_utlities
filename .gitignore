@@ -1,0 +1,6 @@
+venv/*
+Dataset_purge/purge_dataset/*
+Dataset_purge/.vs
+code/build/*
+
+*.zip

@@ -13,7 +13,7 @@ def show_help():
   ──────────────────────────────────────────────────────────────────────────
 
   Usage:
-    preference_utility.exe -u="<user>" -p="<password>" -g="<group>" -path="<folder_path>"
+    preference_utility.exe -u="<user>" -p="<password>" -pf="<password_file_path>" -g="<group>" -path="<folder_path>"
 
   Description:
     This utility reads user credentials and locates the '*.xml' files
@@ -23,6 +23,7 @@ def show_help():
   Arguments:
     -u        Specify username
     -p        Specify password
+    -pf       Specify password file path (alternative to -p)
     -g        Specify group name
     -path     Specify the folder path where 'preference.xml' resides
     -h, -help, -HELP   Show this help message
@@ -115,14 +116,17 @@ def determine_action(folder_path: str) -> str:
           return action.upper()
   return "unknown"
 
-def process_folder(base_folder: str, user: str, password: str, group: str):
+def process_folder(base_folder: str, user: str, password: str, password_file: str, group: str):
     """Walk through folders, find XML files, and print commands."""
     env1 = os.environ.copy()
     tc_root = os.environ.get("TC_ROOT")
     tc_data = os.environ.get("TC_DATA")
+    
+    check_password_file = "Yes" if password_file else "No"
+    # print(f"Password provided via file: {check_password_file}")
 
-    print(f'"TC_ROOT": {tc_root}')
-    print(f'"TC_DATA": {tc_data}')
+    # print(f'"TC_ROOT": {tc_root}')
+    # print(f'"TC_DATA": {tc_data}')
 
     if not tc_root:
         print("Error: TC_ROOT environment variable not set.")
@@ -156,17 +160,31 @@ def process_folder(base_folder: str, user: str, password: str, group: str):
 
                     # ✅ Add -target only for group/role scopes
                     if scope in ("group", "role"):
-                        cmd = (
-                            f'{exe_path} -u={user} -p={password} -g={group} '
-                            f'-mode=import -scope={scope} -target={target} '
-                            f'-action={action} -file="{xml_path}"'
-                        )
+                        if check_password_file == "Yes":
+                            cmd = (
+                                f'{exe_path} -u={user} -pf="{password_file}" -g={group} '
+                                f'-mode=import -scope={scope} -target={target} '
+                                f'-action={action} -file="{xml_path}"'
+                            )
+                        else:
+                            cmd = (
+                                f'{exe_path} -u={user} -p={password} -g={group} '
+                                f'-mode=import -scope={scope} -target={target} '
+                                f'-action={action} -file="{xml_path}"'
+                            )
                     else:
-                        cmd = (
-                            f'{exe_path} -u={user} -p={password} -g={group} '
-                            f'-mode=import -scope={scope} -action={action} '
-                            f'-file="{xml_path}"'
-                        )
+                        if check_password_file == "Yes":
+                            cmd = (
+                                f'{exe_path} -u={user} -pf="{password_file}" -g={group} '
+                                f'-mode=import -scope={scope} -action={action} '
+                                f'-file="{xml_path}"'
+                            )
+                        else:
+                            cmd = (
+                                f'{exe_path} -u={user} -p={password} -g={group} '
+                                f'-mode=import -scope={scope} -action={action} '
+                                f'-file="{xml_path}"'
+                            )
 
                     if EXECUTE:
                         print(f'==> Importing: {cmd}')
@@ -177,7 +195,9 @@ def process_folder(base_folder: str, user: str, password: str, group: str):
 
 def main():
     
-    user = password = group = folder_path = None
+    user = password = password_file = group = folder_path = None
+    password_provided = False
+    password_file_provided = False
 
     # Parse command-line arguments
     for arg in sys.argv[1:]:
@@ -188,17 +208,38 @@ def main():
             user = arg.split("=", 1)[1].strip('"')
         elif arg.startswith("-p="):
             password = arg.split("=", 1)[1].strip('"')
+            password_provided = True
+        elif arg.startswith("-pf="):
+            password_file = arg.split("=", 1)[1].strip('"')
+            password_file_provided = True
+            if os.path.isfile(password_file):
+                with open(password_file, 'r') as f:
+                    password = f.read().strip()
+            else:
+                print(f"Error: Password file '{password_file}' not found.")
+                return
         elif arg.startswith("-g="):
             group = arg.split("=", 1)[1].strip('"')
         elif arg.startswith("-path="):
             folder_path = arg.split("=", 1)[1].strip('"')
 
-    # Validate required arguments
-    if not all([user, password, group, folder_path]):
+    # Mutually exclusive check
+    if password_provided and password_file_provided:
+        print("Error: Provide either -p or -pf, not both.")
+        return
+
+    # Require at least one authentication method
+    if not password and not password_file:
+        print("Error: Either -p or -pf must be provided.")
+        return
+
+    # Validate remaining required arguments
+    if not all([user, group, folder_path]):
         print("Error: Missing required arguments.")
-        print('Usage: preference_utility.exe -u="<user>" -p="<password>" -g="<group>" -path="<folder_path>"')
+        print('Usage: preference_utility.exe -u="<user>" (-p="<password>" | -pf="<password_file_path>") -g="<group>" -path="<folder_path>"')
         print('Use "-h" or "-help" for details.')
         return
+
     
     # Check if folder path is valid
     if not os.path.isdir(folder_path):
@@ -206,13 +247,14 @@ def main():
         return
     
     # Display collected info
-    print("User Info:")
-    print(f"  Username   : {user}")
-    print(f"  Password   : {password}")
-    print(f"  Group      : {group}")
-    print(f"  Folder path: {os.path.abspath(folder_path)}")
+    # print("User Info:")
+    # print(f"  Username   : {user}")
+    # print(f"  Password   : {password}")
+    # print(f"  Password File: {password_file if 'password_file' in locals() else 'N/A'}")
+    # print(f"  Group      : {group}")
+    # print(f"  Folder path: {os.path.abspath(folder_path)}")
 
-    process_folder(folder_path, user, password, group)
+    process_folder(folder_path, user, password, password_file, group)
 
 if __name__ == "__main__":
     main()
